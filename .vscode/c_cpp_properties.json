@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "driver",
+            "defines": [
+                "__KERNEL__",
+                "MODULE"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "intelliSenseMode": "gcc-x64",
+            "includePath": [
+                "/usr/src/linux-headers-6.17.0-14-generic/arch/x86/include",
+                "/usr/src/linux-headers-6.17.0-14-generic/arch/x86/include/generated",
+                "/usr/src/linux-headers-6.17.0-14-generic/include",
+                "/usr/src/linux-headers-6.17.0-14-generic/arch/x86/include/uapi",
+                "/usr/src/linux-headers-6.17.0-14-generic/arch/x86/include/generated/uapi",
+                "/usr/src/linux-headers-6.17.0-14-generic/include/uapi",
+                "/usr/src/linux-headers-6.17.0-14-generic/include/generated/uapi",
+                "/usr/src/linux-headers-6.17.0-14-generic/ubuntu/include",
+                "/usr/lib/gcc/x86_64-linux-gnu/13/include"
+            ],
+            "compilerArgs": [
+                "-nostdinc",
+                "-include", "/usr/src/linux-headers-6.17.0-14-generic/include/linux/kconfig.h",
+                "-include", "/usr/src/linux-headers-6.17.0-14-generic/include/linux/compiler_types.h"
+            ]
+        }
+    ],
+    "version": 4
+}
