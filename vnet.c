@@ -41,6 +41,8 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
         {
             struct icmphdr *icmph = (struct icmphdr *)(skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr));
             printk(KERN_INFO "vnet: got ICMP echo\n");
+            printk(KERN_INFO "vnet: icmp type=%d, daddr=%pI4, expected=%pI4\n",
+                icmph->type, &iph->daddr, &vnet_ip_be32);
             if (icmph->type == ICMP_ECHO && iph->daddr == vnet_ip_be32) 
             {
                 printk(KERN_INFO "vnet: got ICMP echo, forming reply\n");
