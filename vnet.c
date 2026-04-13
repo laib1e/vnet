@@ -75,7 +75,9 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
 
     skb->pkt_type = PACKET_HOST;
     skb->protocol = htons(ETH_P_IP);
-    netif_rx(skb);
+    printk(KERN_INFO "vnet: sending reply via netif_rx\n");
+    int ret = netif_rx(skb);
+    printk(KERN_INFO "vnet: netif_rx returned %d\n", ret);
     return NETDEV_TX_OK;
 }
 
