@@ -36,12 +36,16 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
 {
     if (skb == NULL) return NETDEV_TX_OK;
  
-    struct ethhdr *eth = (struct ethhdr*)skb->data;
-    struct iphdr  *iph = (struct iphdr*)(skb->data + sizeof(struct ethhdr));
-    if (iph) 
-    {
-        printk(KERN_INFO "vnet: SRC: %pI4, DST: %pI4", &iph->saddr, &iph->daddr);
-    }
+    // Код вызывающий ошибку
+    // struct ethhdr *eth = (struct ethhdr*)skb->data;
+    // struct iphdr  *iph = (struct iphdr*)(skb->data + sizeof(struct ethhdr));
+    // if (iph) 
+    // {
+    //     printk(KERN_INFO "vnet: SRC: %pI4, DST: %pI4", &iph->saddr, &iph->daddr);
+    // }
+
+    printk(KERN_INFO "vnet: skb len = %d, data first 34 bytes:", skb->len);
+    print_hex_dump(KERN_INFO, "vnet: ", DUMP_PREFIX_OFFSET, 16, 1, skb->data, min((unsigned)skb->len, (unsigned int)34), true);
 
     kfree_skb(skb);
     return NETDEV_TX_OK;
