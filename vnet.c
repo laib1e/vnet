@@ -3,6 +3,8 @@
 #include <linux/kernel.h>
 #include <linux/netdevice.h>
 #include <linux/ip.h>
+#include <linux/icmp.h>
+#include <linux/etherdevice.h>
 #include <linux/proc_fs.h>
 #include <linux/inet.h>
 #include <linux/errno.h>
@@ -32,18 +34,48 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
 {
     struct ethhdr *eth = (struct ethhdr *)skb->data;
 
-    print_hex_dump(KERN_INFO, "vnet: ", DUMP_PREFIX_OFFSET, 16, 1,
-               skb->data, min((unsigned int)skb->len, (unsigned int)54), true);
     if (ntohs(eth->h_proto) == ETH_P_IP) 
     {
         struct iphdr *iph = (struct iphdr*)(skb->data + sizeof(struct ethhdr));
-        if (iph) 
+        if (iph->protocol == IPPROTO_ICMP) 
         {
-            printk(KERN_INFO "vnet: SRC: %pI4, DST: %pI4", &iph->saddr, &iph->daddr);
+            struct icmphdr *icmph = (struct icmphdr *)(skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr));
+            if (icmph->type == ICMP_ECHO && iph->daddr == vnet_ip_be32) 
+            {
+                __be32 temp_addr;
+                unsigned char temp_eth_addr[ETH_ALEN];
+
+                skb->ip_summed = CHECKSUM_UNNECESSARY;
+                ether_addr_copy(temp_eth_addr, eth->h_source);
+                ether_addr_copy(eth->h_source, eth->h_dest);
+                ether_addr_copy(eth->h_dest, temp_eth_addr);
+
+                temp_addr = iph->saddr;
+                iph->saddr = iph->daddr;
+                iph->daddr = temp_addr;
+
+                icmph->type = ICMP_ECHOREPLY;
+                icmph->checksum = 0;
+                icmph->checksum = ip_compute_csum(icmph, ntohs(iph->tot_len) - sizeof(struct iphdr));
+
+                iph->check = 0;
+                iph->check = ip_fast_csum((unsigned char*)iph, iph->ihl);
+            } else {
+                kfree_skb(skb);
+                return NETDEV_TX_OK;
+            }
+        } else {
+            kfree_skb(skb);
+            return NETDEV_TX_OK;
         }
+    } else {
+        kfree_skb(skb);
+        return NETDEV_TX_OK;
     }
 
-    kfree_skb(skb);
+    skb->pkt_type = PACKET_HOST;
+    skb->protocol = htons(ETH_P_IP);
+    netif_rx(skb);
     return NETDEV_TX_OK;
 }
 
