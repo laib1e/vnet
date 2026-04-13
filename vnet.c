@@ -1,6 +1,11 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/ip.h>
+#include <linux/icmp.h>
+#include <linux/skbuff.h>
+#include <linux/etherdevice.h>
+#include <linux/if_ether.h>
 #include <linux/netdevice.h>
 #include <linux/proc_fs.h>
 #include <linux/inet.h>
@@ -29,6 +34,15 @@ static int vnet_close(struct net_device *dev)
 
 static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev) 
 {
+    if (skb == NULL) return NETDEV_TX_OK;
+ 
+    struct ethhdr *eth = (struct ethhdr*)skb->data;
+    struct iphdr  *iph = (struct iphdr*)(skb->data + sizeof(struct ethhdr));
+    if (iph) 
+    {
+        printk(KERN_INFO "vnet: SRC: %pI4, DST: %pI4", &iph->saddr, &iph->daddr);
+    }
+
     kfree_skb(skb);
     return NETDEV_TX_OK;
 }
