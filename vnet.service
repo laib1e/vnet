@@ -1,0 +1,16 @@
+[Unit]
+Description=Virtual network interface module
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/modprobe vnet
+ExecStart=/sbin/ip link set vnet0 up
+ExecStart=/bin/sh -c 'echo "10.0.0.1" > /proc/vnet'
+ExecStart=/sbin/ip route add 10.0.0.1/32 dev vnet0
+
+ExecStop=/sbin/modprobe -r vnet
+
+[Install]
+WantedBy=multi-user.target
