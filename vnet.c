@@ -40,8 +40,10 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
         if (iph->protocol == IPPROTO_ICMP) 
         {
             struct icmphdr *icmph = (struct icmphdr *)(skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr));
+            printk(KERN_INFO "vnet: got ICMP echo\n");
             if (icmph->type == ICMP_ECHO && iph->daddr == vnet_ip_be32) 
             {
+                printk(KERN_INFO "vnet: got ICMP echo, forming reply\n");
                 __be32 temp_addr;
                 unsigned char temp_eth_addr[ETH_ALEN];
 
@@ -75,6 +77,7 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
 
     skb->pkt_type = PACKET_HOST;
     skb->protocol = htons(ETH_P_IP);
+    printk(KERN_INFO "vnet: sending reply via netif_rx\n");
     netif_rx(skb);
     return NETDEV_TX_OK;
 }
