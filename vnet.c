@@ -2,6 +2,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/netdevice.h>
+#include <linux/ip.h>
 #include <linux/proc_fs.h>
 #include <linux/inet.h>
 #include <linux/errno.h>
@@ -29,6 +30,19 @@ static int vnet_close(struct net_device *dev)
 
 static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev) 
 {
+    struct ethhdr *eth = (struct ethhdr *)skb->data;
+
+    print_hex_dump(KERN_INFO, "vnet: ", DUMP_PREFIX_OFFSET, 16, 1,
+               skb->data, min((unsigned int)skb->len, (unsigned int)54), true);
+    if (ntohs(eth->h_proto) == ETH_P_IP) 
+    {
+        struct iphdr *iph = (struct iphdr*)(skb->data + sizeof(struct ethhdr));
+        if (iph) 
+        {
+            printk(KERN_INFO "vnet: SRC: %pI4, DST: %pI4", &iph->saddr, &iph->daddr);
+        }
+    }
+
     kfree_skb(skb);
     return NETDEV_TX_OK;
 }
@@ -75,6 +89,7 @@ static int __init vnet_module_init(void)
         return -ENOMEM;
     }
 
+    vnet_dev->flags |= IFF_NOARP; // See the solution to bug #1
     vnet_dev->netdev_ops = &vnet_ops;
     res_register_netdev = register_netdev(vnet_dev);
     if (res_register_netdev < 0) 
