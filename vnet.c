@@ -105,7 +105,9 @@ static ssize_t vnet_proc_write(struct file *fd, const char __user *buf, size_t c
 {
     if (*pos > 0) return 0;
     if (copy_from_user(vnet_ip_char, buf, count) != 0) return -EFAULT;
+    if (count > 0 && vnet_ip_char[count - 1] == '\n') vnet_ip_char[count - 1] = '\0';
     in4_pton(vnet_ip_char, -1, (u8 *)&vnet_ip_be32, '\0', NULL);
+    printk(KERN_INFO "vnet: parsed ip_be32 = %pI4\n", &vnet_ip_be32);
     return count;
 }
 
