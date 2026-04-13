@@ -73,6 +73,13 @@ static netdev_tx_t start_ximit(struct sk_buff *skb, struct net_device *dev)
         return NETDEV_TX_OK;
     }
 
+    // See the solution to bug #3
+    skb->dev = dev; 
+    skb_reset_mac_header(skb);
+    skb_pull(skb, sizeof(struct ethhdr));
+    skb_reset_network_header(skb);
+    // See the solution to bug #3
+    
     skb->pkt_type = PACKET_HOST;
     skb->protocol = htons(ETH_P_IP);
     netif_rx(skb);
